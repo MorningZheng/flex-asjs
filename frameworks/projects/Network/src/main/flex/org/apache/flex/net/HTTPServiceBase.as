@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 package org.apache.flex.net
 {
+	import org.apache.flex.core.IStrand;
     COMPILE::SWF
     {
-        import org.apache.flex.events.EventDispatcher;            
+        import org.apache.flex.events.EventDispatcher;
+        import org.apache.flex.core.addBeadsToStrand;
+        import org.apache.flex.core.IBead;
     }
     COMPILE::JS
     {
@@ -36,12 +39,140 @@ package org.apache.flex.net
      *  @productversion FlexJS 0.0
      */
     COMPILE::SWF
-	public class HTTPServiceBase extends EventDispatcher
+	public class HTTPServiceBase extends EventDispatcher implements IStrand, IBead
 	{
+        private var _strand:IStrand;
+        
+        /**
+         *  @copy org.apache.flex.core.UIBase#strand
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.0
+         */
+        public function set strand(value:IStrand):void
+        {
+            _strand = value;
+            if(beads && beads.length)
+            {
+                addBeads();
+            }
+       }
+
+		public var beads:Array;
+		
+		private var _beads:Vector.<IBead>;
+        
+        /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
+
+        /**
+         *  @copy org.apache.flex.core.UIBase#addBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.0
+         */
+		public function addBead(bead:IBead):void
+		{
+			if (!_beads)
+				_beads = new Vector.<IBead>;
+			_beads.push(bead);
+			bead.strand = this;
+		}
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
+        }
+		
+        /**
+         *  @copy org.apache.flex.core.UIBase#getBeadByType()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.0
+         */
+        COMPILE::SWF
+		public function getBeadByType(classOrInterface:Class):IBead
+		{
+			for each (var bead:IBead in _beads)
+			{
+				if (bead is classOrInterface)
+					return bead;
+			}
+			return null;
+		}
+		
+        /**
+         *  @copy org.apache.flex.core.UIBase#removeBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.0
+         */
+        COMPILE::SWF
+		public function removeBead(value:IBead):IBead	
+		{
+			var n:int = _beads.length;
+			for (var i:int = 0; i < n; i++)
+			{
+				var bead:IBead = _beads[i];
+				if (bead == value)
+				{
+					_beads.splice(i, 1);
+					return bead;
+				}
+			}
+			return null;
+		}        
     }
 
     COMPILE::JS
     public class HTTPServiceBase extends ElementWrapper
     {
+        private var _strand:IStrand;
+        
+        /**
+         *  @copy org.apache.flex.core.UIBase#strand
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.0
+         */
+        public function set strand(value:IStrand):void
+        {
+            _strand = value;
+            if(beads && beads.length)
+            {
+                addBeads();
+            }
+       }
     }
 }

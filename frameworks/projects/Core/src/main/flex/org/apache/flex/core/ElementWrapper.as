@@ -259,7 +259,7 @@ package org.apache.flex.core
             _element = value;
         }
         
-        private var beads:Array;
+        public var beads:Array;
 
 		protected var _beads:Vector.<IBead>;
         
