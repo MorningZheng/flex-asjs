@@ -38,7 +38,7 @@ package org.apache.flex.mdl.supportClasses
      *  @playerversion AIR 2.6
      *  @productversion FlexJS 0.8
      */
-    public class MaterialIconBase extends UIBase implements org.apache.flex.mdl.materialIcons.IMaterialIcon
+    public class MaterialIconBase extends UIBase implements IMaterialIcon
     {
         /**
          *  constructor.
