@@ -21,6 +21,7 @@ package org.apache.flex.html.supportClasses
     import flash.display.DisplayObject;
     import flash.text.TextFieldType;
     
+	import org.apache.flex.core.addBeadsToStrand;
     import org.apache.flex.core.CSSTextField;
     import org.apache.flex.core.IBead;
     import org.apache.flex.core.IBeadController;
@@ -481,6 +482,22 @@ package org.apache.flex.html.supportClasses
         public var beads:Array;
         
         private var _beads:Vector.<IBead>;
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
 		
 		/**
 		 * @private
@@ -491,6 +508,19 @@ package org.apache.flex.html.supportClasses
                 _beads = new Vector.<IBead>;
             _beads.push(bead);
             bead.strand = this;
+        }
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
         }
         
 		/**

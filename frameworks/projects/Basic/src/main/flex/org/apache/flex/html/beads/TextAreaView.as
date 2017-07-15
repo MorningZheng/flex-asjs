@@ -23,6 +23,7 @@ package org.apache.flex.html.beads
 	import flash.events.IEventDispatcher;
 	import flash.text.TextFieldType;
 	
+	import org.apache.flex.core.addBeadsToStrand;
 	import org.apache.flex.core.IBead;
     import org.apache.flex.core.IBeadModel;
 	import org.apache.flex.core.IScrollBarModel;
@@ -104,8 +105,7 @@ package org.apache.flex.html.beads
 		{
 			super.strand = value;
 			
-            for each (var bead:IBead in beads)
-                addBead(bead);
+            addBeads();
             
 			// add a border to this
 			_border = new Border();
@@ -204,6 +204,22 @@ package org.apache.flex.html.beads
 		private var _beads:Vector.<IBead>;
 
         /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
+
+        /**
          *  @copy org.apache.flex.core.UIBase#addBead()
          *  
          *  @langversion 3.0
@@ -218,6 +234,19 @@ package org.apache.flex.html.beads
 			_beads.push(bead);
 			bead.strand = this;
 		}
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
+        }
 		
         /**
          *  @copy org.apache.flex.core.UIBase#getBeadByType()

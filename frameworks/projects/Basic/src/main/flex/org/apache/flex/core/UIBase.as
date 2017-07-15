@@ -23,6 +23,7 @@ package org.apache.flex.core
         import flash.display.DisplayObject;
         import flash.display.Sprite;
         import flash.display.Stage;
+        import org.apache.flex.core.addBeadsToStrand;
         import org.apache.flex.events.utils.MouseEventConverter;
     }
 	
@@ -1034,17 +1035,21 @@ package org.apache.flex.core
         {
             return this;
         }
-		
+
         /**
-         *  @copy org.apache.flex.core.Application#beads
+         *  @copy org.apache.flex.core.IStrand#addBeads()
          *  
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.9
          */
-		public var beads:Array;
-		
+        COMPILE::SWF
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
+        }
+
         COMPILE::SWF
 		private var _beads:Vector.<IBead>;
         

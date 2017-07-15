@@ -19,7 +19,7 @@
 package org.apache.flex.html
 {
 	import org.apache.flex.states.State;
-
+    import org.apache.flex.core.addBeadsToStrand;
 	import org.apache.flex.core.IBead;
     import org.apache.flex.core.ILayoutHost;
     import org.apache.flex.core.IParent;
@@ -77,10 +77,7 @@ package org.apache.flex.html
 
             dispatchEvent(new Event("strandChanged"));
 
-            for each (var bead:IBead in beads)
-                addBead(bead);
-
-            dispatchEvent(new org.apache.flex.events.Event("beadsAdded"));
+            addBeads();
 
             MXMLDataInterpreter.generateMXMLInstances(this, IParent(value), MXMLDescriptor);
 
@@ -257,6 +254,22 @@ package org.apache.flex.html
         private var _beads:Array;
 
         /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
+
+        /**
          *  @copy org.apache.flex.core.IStrand#addBead()
          *
          *  @langversion 3.0
@@ -270,6 +283,19 @@ package org.apache.flex.html
                 _beads = [];
             _beads.push(bead);
             bead.strand = this;
+        }
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
         }
 
         /**
