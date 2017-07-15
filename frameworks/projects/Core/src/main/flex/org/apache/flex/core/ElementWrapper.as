@@ -60,11 +60,29 @@ package org.apache.flex.core
             _element = value;
         }
         
+        private var beads:Array;
+
         protected var _beads:Vector.<IBead>;
         
         //--------------------------------------
         //   Function
         //--------------------------------------
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
         
         /**
          * @param bead The new bead.
@@ -78,6 +96,19 @@ package org.apache.flex.core
             
             _beads.push(bead);
             bead.strand = this;
+        }
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
         }
         
         /**
@@ -228,12 +259,29 @@ package org.apache.flex.core
             _element = value;
         }
         
+        private var beads:Array;
 
 		protected var _beads:Vector.<IBead>;
         
 		//--------------------------------------
 		//   Function
 		//--------------------------------------
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
 
         /**
          * @param bead The new bead.
@@ -248,6 +296,19 @@ package org.apache.flex.core
 			_beads.push(bead);
 			bead.strand = this;
 		}
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
+        }
 
         /**
          * @param classOrInterface The requested bead type.

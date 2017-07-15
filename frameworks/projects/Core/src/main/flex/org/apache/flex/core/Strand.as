@@ -120,6 +120,22 @@ package org.apache.flex.core
 		private var _beads:Vector.<IBead>;
 
         /**
+         *  @copy org.apache.flex.core.IStrand#registerBead()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function registerBead(bead:IBead):void
+        {
+            if(beads)
+                beads.push(bead);
+            else
+                beads = [bead];
+        }
+
+        /**
          *  @copy org.apache.flex.core.IStrand#addBead()
          *  
          *  @langversion 3.0
@@ -136,6 +152,19 @@ package org.apache.flex.core
 				_model = bead as IBeadModel;
 			bead.strand = this;
 		}
+
+        /**
+         *  @copy org.apache.flex.core.IStrand#addBeads()
+         *  
+         *  @langversion 3.0
+         *  @playerversion Flash 10.2
+         *  @playerversion AIR 2.6
+         *  @productversion FlexJS 0.9
+         */
+        public function addBeads():void
+        {
+            addBeadsToStrand(this,beads);
+        }
 		
         /**
          *  @copy org.apache.flex.core.IStrand#getBeadByType()
