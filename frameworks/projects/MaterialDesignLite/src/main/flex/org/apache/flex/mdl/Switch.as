@@ -82,7 +82,7 @@ package org.apache.flex.mdl
      *  @playerversion AIR 2.6
      *  @productversion FlexJS 0.8
      */
-    public class Switch extends TextButton implements IStrand, IEventDispatcher, IUIBase
+    public class Switch extends TextButton
     {
         /**
          *  Constructor.

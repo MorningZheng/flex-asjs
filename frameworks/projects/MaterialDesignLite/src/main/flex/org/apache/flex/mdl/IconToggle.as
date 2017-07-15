@@ -79,7 +79,7 @@ package org.apache.flex.mdl
      *  @playerversion AIR 2.6
      *  @productversion FlexJS 0.8
      */    
-    public class IconToggle extends TextButton implements IStrand, IEventDispatcher, IUIBase, IMaterialIconProvider
+    public class IconToggle extends TextButton implements IMaterialIconProvider
     {
         /**
          *  constructor.

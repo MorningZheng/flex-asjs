@@ -41,7 +41,7 @@ package org.apache.flex.mdl.beads.views
 	 *  @playerversion AIR 2.6
 	 *  @productversion FlexJS 0.8
 	 */
-	public class SliderView extends BeadViewBase implements ISliderView, IBeadView
+	public class SliderView extends BeadViewBase implements ISliderView
 	{
 		/**
 		 *  constructor.

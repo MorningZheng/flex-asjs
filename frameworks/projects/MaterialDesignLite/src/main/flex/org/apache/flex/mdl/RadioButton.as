@@ -76,7 +76,7 @@ package org.apache.flex.mdl
      *  @productversion FlexJS 0.8
      */
     COMPILE::SWF
-	public class RadioButton extends UIButtonBase implements IStrand
+	public class RadioButton extends UIButtonBase
 	{
         /**
 		 *  constructor.
