@@ -26,6 +26,7 @@ package {
  */
 internal class CoreClasses
 {
+	import org.apache.flex.core.addBeadsToStrand; addBeadsToStrand;
     import org.apache.flex.core.BeadViewBase; BeadViewBase;
     import org.apache.flex.core.ImageViewBase; ImageViewBase;
     import org.apache.flex.core.BrowserWindow; BrowserWindow;
