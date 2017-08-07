@@ -57,7 +57,7 @@ package org.apache.flex.events
 	 * @productversion FlexJS 0.0
 	 */
 	COMPILE::JS
-	public class BrowserEvent
+	public class BrowserEvent implements IBrowserEvent
 	{
 
 		//--------------------------------------
@@ -67,8 +67,12 @@ package org.apache.flex.events
 		/**
 		 * @type {?goog.events.BrowserEvent}
 		 */
-		public var wrappedEvent:Object;
+		private var wrappedEvent:Object;
 
+		public function wrapEvent(event:goog.events.BrowserEvent):void
+		{
+			wrappedEvent = event;
+		}
 		//--------------------------------------
 		//   Function
 		//--------------------------------------
@@ -177,16 +181,7 @@ package org.apache.flex.events
 		 */
 		public function get currentTarget():Object
 		{
-			var o:Object = wrappedEvent.currentTarget;
-
-			if (o)
-			{
-				if (o.flexjs_wrapper)
-					return o.flexjs_wrapper;
-				if (o.parentNode && o.parentNode.flexjs_wrapper)
-				    return o.parentNode.flexjs_wrapper;
-			}
-			return o;
+			return getTargetWrapper(wrappedEvent.currentTarget);
 		}
 
 		/**
@@ -358,16 +353,7 @@ package org.apache.flex.events
 		 */
 		public function get relatedTarget():Object
 		{
-			var o:Object = wrappedEvent.relatedTarget;
-
-			if (o)
-			{
-				if (o.flexjs_wrapper)
-					return o.flexjs_wrapper;
-				if (o.parentNode && o.parentNode.flexjs_wrapper)
-				    return o.parentNode.flexjs_wrapper;
-			}
-			return o;
+			return getTargetWrapper(wrappedEvent.relatedTarget);
 		}
 
 		/**
@@ -435,7 +421,7 @@ package org.apache.flex.events
          */
 		public function stopImmediatePropagation():void
 		{
-			//wrappedEvent.stopImmediatePropagation(); // not in goog.events.BrowserEvent
+			wrappedEvent.getBrowserEvent().stopImmediatePropagation(); // not in goog.events.BrowserEvent
 			wrappedEvent.stopPropagation();
 		}
 
@@ -461,16 +447,7 @@ package org.apache.flex.events
 		 */
 		public function get target():Object
 		{
-			var o:Object = wrappedEvent.target;
-
-			if (o)
-			{
-				if (o.flexjs_wrapper)
-					return o.flexjs_wrapper;
-				if (o.parentNode && o.parentNode.flexjs_wrapper)
-				    return o.parentNode.flexjs_wrapper;
-			}
-			return o;
+			return getTargetWrapper(wrappedEvent.target);
 		}
 
 		/**
@@ -505,7 +482,7 @@ package org.apache.flex.events
 		{
 			if(_buttons > -1)
 				return _buttons == 1;
-			var ev:* = wrappedEvent.event_;
+			var ev:* = wrappedEvent.getBrowserEvent();
 			//Safari does not yet support buttons
 			if ('buttons' in ev)
 				return ev["buttons"] == 1;
@@ -518,7 +495,7 @@ package org.apache.flex.events
 
 		public function get buttons():int
 		{
-			return wrappedEvent.event_.buttons;
+			return wrappedEvent.getBrowserEvent().buttons;
 		}
 	}
 }

@@ -44,7 +44,7 @@ package org.apache.flex.html.beads.controllers
      *  @langversion 3.0
      *  @playerversion Flash 10.2
      *  @playerversion AIR 2.6
-     *  @productversion FlexJS 0.0
+     *  @productversion FlexJS 0.8
      */
     [Event(name="dragStart", type="org.apache.flex.events.DragEvent")]
     
@@ -55,7 +55,7 @@ package org.apache.flex.html.beads.controllers
      *  @langversion 3.0
      *  @playerversion Flash 10.2
      *  @playerversion AIR 2.6
-     *  @productversion FlexJS 0.0
+     *  @productversion FlexJS 0.8
      */
     [Event(name="dragMove", type="org.apache.flex.events.DragEvent")]
     
@@ -65,7 +65,7 @@ package org.apache.flex.html.beads.controllers
      *  @langversion 3.0
      *  @playerversion Flash 10.2
      *  @playerversion AIR 2.6
-     *  @productversion FlexJS 0.0
+     *  @productversion FlexJS 0.8
      */
     [Event(name="dragEnd", type="org.apache.flex.events.DragEvent")]
     
@@ -79,7 +79,7 @@ package org.apache.flex.html.beads.controllers
 	 *  @langversion 3.0
 	 *  @playerversion Flash 10.2
 	 *  @playerversion AIR 2.6
-	 *  @productversion FlexJS 0.0
+	 *  @productversion FlexJS 0.8
 	 */
 	public class DragMouseController extends EventDispatcher implements IBead
 	{
@@ -90,7 +90,7 @@ package org.apache.flex.html.beads.controllers
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.8
          */
         public static var dragging:Boolean = false;
         
@@ -100,7 +100,7 @@ package org.apache.flex.html.beads.controllers
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.8
          */
         public static var dragImage:IUIBase;
         
@@ -110,7 +110,7 @@ package org.apache.flex.html.beads.controllers
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.8
          */
         public static var dragImageOffsetX:Number = 0;
         
@@ -120,7 +120,7 @@ package org.apache.flex.html.beads.controllers
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.8
          */
         public static var dragImageOffsetY:Number = 0;
         
@@ -131,19 +131,9 @@ package org.apache.flex.html.beads.controllers
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.8
          */
         public static var defaultThreshold:int = 4;
-		
-		/**
-		 * The object under the mouse when the dragStart is dispatched.
-		 *  
-		 *  @langversion 3.0
-		 *  @playerversion Flash 10.2
-		 *  @playerversion AIR 2.6
-		 *  @productversion FlexJS 0.8
-		 */
-		public static var dragStartObject:Object;
         
 		/**
 		 *  constructor.
@@ -151,7 +141,7 @@ package org.apache.flex.html.beads.controllers
 		 *  @langversion 3.0
 		 *  @playerversion Flash 10.2
 		 *  @playerversion AIR 2.6
-		 *  @productversion FlexJS 0.0
+		 *  @productversion FlexJS 0.8
 		 */
 		public function DragMouseController()
 		{
@@ -165,7 +155,7 @@ package org.apache.flex.html.beads.controllers
          *  @langversion 3.0
          *  @playerversion Flash 10.2
          *  @playerversion AIR 2.6
-         *  @productversion FlexJS 0.0
+         *  @productversion FlexJS 0.8
          */
         public var threshold:int = 4;
         
@@ -177,7 +167,7 @@ package org.apache.flex.html.beads.controllers
 		 *  @langversion 3.0
 		 *  @playerversion Flash 10.2
 		 *  @playerversion AIR 2.6
-		 *  @productversion FlexJS 0.0
+		 *  @productversion FlexJS 0.8
 		 */
 		public function set strand(value:IStrand):void
 		{
@@ -222,14 +212,14 @@ package org.apache.flex.html.beads.controllers
                 trace("DRAG-MOUSE: not dragging anything else");
                 if (Math.abs(event.screenX - mouseDownX) > threshold ||
                     Math.abs(event.screenY - mouseDownY) > threshold)
-                {
-					DragMouseController.dragStartObject = event.target;
-					
-                    trace("DRAG-MOUSE: sending dragStart");
+                {					
                     dragEvent = DragEvent.createDragEvent("dragStart", event);
 					dragEvent.clientX = mouseDownX;
 					dragEvent.clientY = mouseDownY;
-                    DragEvent.dispatchDragEvent(dragEvent, _strand);
+					trace("DRAG-MOUSE: sending dragStart via "+event.target.toString());
+					DragEvent.dispatchDragEvent(dragEvent, event.target);
+					dispatchEvent(dragEvent);
+					
                     if (DragEvent.dragSource != null)
                     {
                         dragging = true;
@@ -245,31 +235,31 @@ package org.apache.flex.html.beads.controllers
 						}
 						COMPILE::JS {
 							dragImage.element.style['pointer-events'] = 'none';
+							dragImage.element.style['position'] = 'absolute';
 						}
                     }
                 }
             }
             else
             {
-//                trace("DRAG-MOUSE: sending dragMove " + event.target.toString());
+                trace("DRAG-MOUSE: sending dragMove via " + event.target.toString());
                 dragEvent = DragEvent.createDragEvent("dragMove", event);
-//                trace("client: " + event.clientX.toString() + " " + event.clientY.toString() + " " + event.target.toString());
                 pt = PointUtils.globalToLocal(new Point(event.clientX, event.clientY), host);
-//                trace("host: " + pt.x.toString() + " " + pt.y.toString());
                 dragImage.x = pt.x + dragImageOffsetX;
                 dragImage.y = pt.y + dragImageOffsetY;
                 DragEvent.dispatchDragEvent(dragEvent, event.target);
+				dispatchEvent(dragEvent);
             }
         }
         
         private function dragMouseUpHandler(event:MouseEvent):void
         {
-//            trace("DRAG-MOUSE: dragMouseUp");
+            trace("DRAG-MOUSE: dragMouseUp");
             var dragEvent:DragEvent;
             
             if (dragging)
             {
-//                trace("DRAG-MOUSE: sending dragEnd");
+                trace("DRAG-MOUSE: sending dragEnd via: "+event.target.toString());
 				
 				var screenPoint:Point = new Point(event.screenX, event.screenY);
 				var newPoint:Point = PointUtils.globalToLocal(screenPoint, event.target);
@@ -278,14 +268,17 @@ package org.apache.flex.html.beads.controllers
 				dragEvent.clientY = newPoint.y;
 				
                 DragEvent.dispatchDragEvent(dragEvent, event.target);
+				dispatchEvent(dragEvent);
                 event.preventDefault();
             }
+			
             dragging = false;
             DragEvent.dragSource = null;
             DragEvent.dragInitiator = null;
             if (dragImage && host)
                 host.removeElement(dragImage);
             dragImage = null;
+			
             IUIBase(_strand).topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, dragMouseMoveHandler);
             IUIBase(_strand).topMostEventDispatcher.removeEventListener(MouseEvent.MOUSE_UP, dragMouseUpHandler);			
         }

@@ -29,11 +29,17 @@ package org.apache.flex.core
     {
         import org.apache.flex.events.Event;        
         import org.apache.flex.events.BrowserEvent;
+        import org.apache.flex.events.IBrowserEvent;
         import org.apache.flex.events.ElementEvents;
         import org.apache.flex.events.EventDispatcher;
         import goog.events;
         import goog.events.EventTarget;
         import org.apache.flex.events.utils.EventUtils;
+        import org.apache.flex.events.KeyboardEvent;
+        import org.apache.flex.events.MouseEvent;
+        import goog.events.BrowserEvent;
+        import org.apache.flex.events.utils.KeyboardEventConverter;
+        import org.apache.flex.events.utils.MouseEventConverter;
     }
 
     COMPILE::SWF
@@ -83,10 +89,24 @@ package org.apache.flex.core
          * @param eventObject The event object to pass to the listener.
          * @return Result of listener.
          */
-		static public function fireListenerOverride(listener:Object, eventObject:BrowserEvent):Boolean
+		static public function fireListenerOverride(listener:Object, eventObject:goog.events.BrowserEvent):Boolean
 		{
-			var e:BrowserEvent = new BrowserEvent();
-			e.wrappedEvent = eventObject;
+            var e:IBrowserEvent;
+            var nativeEvent:Object = eventObject.getBrowserEvent();
+            switch(nativeEvent.constructor.name)
+            {
+                case "KeyboardEvent":
+                    e = KeyboardEventConverter.convert(nativeEvent);
+                    break;
+                case "MouseEvent":
+                    e = MouseEventConverter.convert(nativeEvent);
+                    break;
+                default:
+                    e = new org.apache.flex.events.BrowserEvent();
+                    break;
+            }
+
+			e.wrapEvent(eventObject);
 			return HTMLElementWrapper.googFireListener(listener, e);
 		}
 

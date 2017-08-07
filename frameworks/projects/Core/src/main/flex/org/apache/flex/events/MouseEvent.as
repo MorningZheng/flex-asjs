@@ -27,12 +27,15 @@ package org.apache.flex.events
     COMPILE::JS
     {
         import window.MouseEvent;
+		import goog.events.BrowserEvent;
+		import org.apache.flex.events.Event;
 		import org.apache.flex.events.utils.EventUtils;
     }
     
     import org.apache.flex.core.IFlexJSElement;
     import org.apache.flex.geom.Point;
     import org.apache.flex.utils.PointUtils;
+    import org.apache.flex.events.IBrowserEvent;
 
 
 	/**
@@ -148,7 +151,44 @@ package org.apache.flex.events
         {
             return cloneEvent() as flash.events.Event;
         }
-        
+		/**
+         *  The horizontal scroll delta for wheel events
+		 *  In Flash this always returns 0.
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+		public function get deltaX():int
+		{
+			return 0;
+		}
+		/**
+		 * Horizontal wheel events are not supported in Flash
+		 */
+		public function set deltaX(value:int):void
+		{
+			
+		}
+
+		/**
+         *  The vertical scroll delta for wheel events
+		 *  In Flash this just proxies to the delta
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+		public function get deltaY():int
+		{
+			return delta
+		}
+		public function set deltaY(value:int):void
+		{
+			delta = value;
+		}        
         /**
          * Create a copy/clone of the Event object.
          *
@@ -201,7 +241,7 @@ package org.apache.flex.events
 	}
 
 	COMPILE::JS
-	public class MouseEvent extends Event implements IFlexJSEvent
+	public class MouseEvent extends Event implements IFlexJSEvent, IBrowserEvent
 	{
 		private static function platformConstant(s:String):String
 		{
@@ -254,37 +294,147 @@ package org.apache.flex.events
 			this.clickCount = clickCount;
 		}
 
-		private var _localX:Number;
-		public function get localX():Number
-		{
-			return _localX;
-		}
-		public function set localX(value:Number):void
-		{
-			_localX = value;
-			_stagePoint = null;
-		}
+		/**
+		 * @type {?goog.events.BrowserEvent}
+		 */
+		private var wrappedEvent:Object;
+		
+		/**
+		 * @type {MouseEvent}
+		 */
+		private var nativeEvent:Object;
 
-		private var _localY:Number;
-		public function get localY():Number
-		{
-			return _localY;
-		}
-		public function set localY(value:Number):void
-		{
-			_localY = value;
-			_stagePoint = null;
-		}
+		public function wrapEvent(event:goog.events.BrowserEvent):void
+        {
+            wrappedEvent = event;
+			nativeEvent = event.getBrowserEvent();
+        }
 
 		public var relatedObject:Object;
 		public var ctrlKey:Boolean;
 		public var altKey:Boolean;
 		public var shiftKey:Boolean;
-		public var buttonDown:Boolean;
-		public var delta:int;
+		private var _buttons:int = -1;
+		public function get buttonDown():Boolean
+		{
+			if(_buttons > -1)
+				return _buttons == 1;
+			if(!wrappedEvent)
+				return false;
+			//Safari does not yet support buttons
+			if ('buttons' in nativeEvent)
+				_buttons = nativeEvent["buttons"];
+			else
+				_buttons = nativeEvent["which"];
+			return _buttons == 1;
+		}
+		public function set buttonDown(value:Boolean):void
+		{
+			_buttons = value ? 1 : 0;
+		}
+
+		public function get buttons():int
+		{
+			return _buttons;
+		}
+		public function set buttons(value:int):void
+		{
+			_buttons = value;
+		}
+
+		private var _delta:int;
+		/**
+         *  The vertical scroll delta for wheel events
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+		public function get delta():int
+		{
+			return nativeEvent ? nativeEvent.deltaY : _delta;
+		}
+		public function set delta(value:int):void
+		{
+			_delta = value;
+		}
+
+		private var _deltaX:int;
+		/**
+         *  The horizontal scroll delta for wheel events
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+		public function get deltaX():int
+		{
+			return nativeEvent ? nativeEvent.deltaX : _deltaX;
+		}
+		public function set deltaX(value:int):void
+		{
+			_deltaX = value;
+		}
+
+		private var _deltaY:int;
+		/**
+         *  The vertical scroll delta for wheel events
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+		public function get deltaY():int
+		{
+			return nativeEvent ? nativeEvent.deltaY : _deltaY;
+		}
+		public function set deltaY(value:int):void
+		{
+			_deltaY = value;
+		}
+		
 		public var commandKey:Boolean;
 		public var controlKey:Boolean;
 		public var clickCount:int;
+
+        private var _target:Object;
+
+		/**
+         *  @copy org.apache.flex.events.BrowserEvent#target
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
+		public function get target():Object
+		{
+			return wrappedEvent ? getTargetWrapper(wrappedEvent.target) : _target;
+		}
+		public function set target(value:Object):void
+		{
+			_target = value;
+		}
+
+		/**
+         *  @copy org.apache.flex.events.BrowserEvent#currentTarget
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
+		public function get currentTarget():Object
+		{
+			return wrappedEvent ? getTargetWrapper(wrappedEvent.currentTarget) : _target;
+		}
+		public function set currentTarget(value:Object):void
+		{
+			_target = value;
+		}
 
 		// TODO remove this when figure out how to preserve the real target
 		// The problem only manifests in SWF, so this alias is good enough for now
@@ -292,46 +442,135 @@ package org.apache.flex.events
 		{
 			return target;
 		}
-		// these map directly to JS MouseEvent fields.
+		/**
+		 * X-coordinate relative to the window.
+		 * @type {number}
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
 		public function get clientX():Number
 		{
-			return screenX;
+			return wrappedEvent ? wrappedEvent.clientX : _localX;
 		}
-		public function set clientX(value:Number):void
+
+		public function get localX():Number
 		{
-			localX = value;
+			return clientX;
 		}
+		private var _localX:Number;
+
+		public function set localX(value:Number):void
+		{
+			_localX = value;
+		}
+
+		/**
+		 * Y-coordinate relative to the window.
+		 * @type {number}
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
 		public function get clientY():Number
 		{
-			return screenY;
-		}
-		public function set clientY(value:Number):void
-		{
-			localY = value;
+			return wrappedEvent ? wrappedEvent.clientY : _localY;
 		}
 
-		private var _stagePoint:Point;
-	
+		public function get localY():Number
+		{
+			return clientY;
+		}
+
+		private var _localY:Number;
+
+		public function set localY(value:Number):void
+		{
+			_localY = value;
+		}
+
+		/**
+		 * X-coordinate relative to the monitor.
+		 * @type {number}
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
 		public function get screenX():Number
 		{
+			if(wrappedEvent) return wrappedEvent.screenX;
 			if (!target) return localX;
-			if (!_stagePoint)
-			{
-				var localPoint:Point = new Point(localX, localY);
-				_stagePoint = PointUtils.localToGlobal(localPoint, target);
-			}
-			return _stagePoint.x;
+			return stagePoint.x;
 		}
 
+		/**
+		 * Y-coordinate relative to the monitor.
+		 * @type {number}
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
 		public function get screenY():Number
 		{
+			if(wrappedEvent) return wrappedEvent.screenY;
 			if (!target) return localY;
+			return stagePoint.y;
+		}
+        private var _stagePoint:Point;
+		private function get stagePoint():Point
+		{
 			if (!_stagePoint)
 			{
 				var localPoint:Point = new Point(localX, localY);
 				_stagePoint = PointUtils.localToGlobal(localPoint, target);
 			}
-			return _stagePoint.y;
+			return _stagePoint;
+		}
+
+		/**
+		 * Whether the default action has been prevented.
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
+		override public function preventDefault():void
+		{
+			if(wrappedEvent)
+				wrappedEvent.preventDefault();
+			else
+			{
+				super.preventDefault();
+				_defaultPrevented = true;
+			}
+		}
+
+		private var _defaultPrevented:Boolean;
+		/**
+		 * Whether the default action has been prevented.
+		 * @type {boolean}
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
+		public function get defaultPrevented():Boolean
+		{
+			return wrappedEvent ? wrappedEvent.defaultPrevented : _defaultPrevented;
+		}
+		public function set defaultPrevented(value:Boolean):void
+		{
+			_defaultPrevented = value;
 		}
 
 		/**
@@ -452,6 +691,32 @@ package org.apache.flex.events
                 buttonDown, delta
             /* got errors for commandKey, commandKey, controlKey, clickCount*/);
         }
+        /**
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+         */
+		override public function stopImmediatePropagation():void
+		{
+            if(wrappedEvent)
+            {
+			    wrappedEvent.stopPropagation();
+			    nativeEvent.stopImmediatePropagation();
+            }
+		}
+
+        /**
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+         */
+		override public function stopPropagation():void
+		{
+            if(wrappedEvent)
+			    wrappedEvent.stopPropagation();
+		}
 
 	}
 }

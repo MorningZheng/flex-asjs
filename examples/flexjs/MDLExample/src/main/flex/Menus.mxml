@@ -24,7 +24,13 @@ limitations under the License.
 
     <fx:Script>
         <![CDATA[
-            import org.apache.flex.mdl.materialIcons.MaterialIconType;
+        import org.apache.flex.mdl.materialIcons.MaterialIconType;
+        import org.apache.flex.html.SimpleAlert;
+
+        protected function onMyMenuChange(event:Event):void
+        {
+            SimpleAlert.show("You selected: " + myMenu.selectedItem.label, topMostEventDispatcher);
+        }
         ]]>
 	</fx:Script>
 
@@ -43,7 +49,7 @@ limitations under the License.
             </mdl:materialIcon>
         </mdl:Button>
 
-        <mdl:Menu dataMdlFor="menu_btn" ripple="true" bottom="true" left="false"
+        <mdl:Menu id="myMenu" dataMdlFor="menu_btn" ripple="true" bottom="true" left="false" change="onMyMenuChange(event)"
                   labelField="label" className="customMenuItemRenderer">
             <mdl:beads>
                 <js:ConstantBinding

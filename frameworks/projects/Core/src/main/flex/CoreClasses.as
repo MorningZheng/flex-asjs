@@ -119,6 +119,7 @@ internal class CoreClasses
 	import org.apache.flex.debugging.check; check;
 	// import org.apache.flex.debugging.conditionalBreak; conditionalBreak;
 	import org.apache.flex.debugging.notNull; notNull;
+	import org.apache.flex.debugging.throwError; throwError;
 
 	import org.apache.flex.core.StyleChangeNotifier; StyleChangeNotifier;
 	import org.apache.flex.events.CustomEvent; CustomEvent;
@@ -131,10 +132,10 @@ internal class CoreClasses
 	import org.apache.flex.events.MouseEvent; MouseEvent;
 	import org.apache.flex.events.KeyboardEvent; KeyboardEvent;
 	import org.apache.flex.events.utils.KeyboardEventConverter; KeyboardEventConverter;
+	import org.apache.flex.events.utils.MouseEventConverter; MouseEventConverter;
 	COMPILE::SWF
 	{
 	    import org.apache.flex.core.StageProxy; StageProxy;
-		import org.apache.flex.events.utils.MouseEventConverter; MouseEventConverter;
 	}
 	import org.apache.flex.events.utils.KeyConverter; KeyConverter;
 	import org.apache.flex.events.DetailEvent; DetailEvent;
@@ -179,11 +180,13 @@ internal class CoreClasses
 	import org.apache.flex.utils.JXON; JXON;
 	import org.apache.flex.utils.MD5; MD5;
 	import org.apache.flex.utils.OSUtils; OSUtils;
+	import org.apache.flex.utils.PointUtils; PointUtils;
     import org.apache.flex.utils.StringPadder; StringPadder;
 	import org.apache.flex.utils.StringTrimmer; StringTrimmer;
 	import org.apache.flex.utils.StringUtil; StringUtil;
 	import org.apache.flex.utils.ObjectMap; ObjectMap;
 	import org.apache.flex.utils.ObjectUtil; ObjectUtil;
+	import org.apache.flex.utils.PointUtils; PointUtils;
 	import org.apache.flex.utils.Timer; Timer;
 	import org.apache.flex.utils.UIDUtil; UIDUtil;
 	import org.apache.flex.utils.UIUtils; UIUtils;

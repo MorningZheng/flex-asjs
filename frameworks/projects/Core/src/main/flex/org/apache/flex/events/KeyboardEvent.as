@@ -18,7 +18,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 package org.apache.flex.events
 {
-    public class KeyboardEvent extends Event
+    COMPILE::JS
+    {
+        import goog.events.BrowserEvent;
+		import org.apache.flex.events.Event;
+    }
+    import org.apache.flex.events.IBrowserEvent;
+
+    public class KeyboardEvent extends Event implements IBrowserEvent
     {
         COMPILE::SWF
         public static const KEY_DOWN:String = "keyDown";
@@ -29,6 +36,25 @@ package org.apache.flex.events
         public static const KEY_DOWN:String = "keydown";
         COMPILE::JS
         public static const KEY_UP:String = "keyup";
+
+		/**
+		 * @type {?goog.events.BrowserEvent}
+		 */
+        COMPILE::JS
+		private var wrappedEvent:Object;
+
+		/**
+		 * @type {KeyboardEvent}
+		 */
+        COMPILE::JS
+		private var nativeEvent:Object;
+
+        COMPILE::JS
+		public function wrapEvent(event:goog.events.BrowserEvent):void
+        {
+            wrappedEvent = event;
+            nativeEvent = event.getBrowserEvent();
+        }
 
         public function KeyboardEvent(
             type:String,
@@ -48,6 +74,47 @@ package org.apache.flex.events
             _ctrlKey = ctrlKey;
             _metaKey = metaKey;
         }
+        COMPILE::JS
+        private var _target:Object;
+		/**
+         *  @copy org.apache.flex.events.BrowserEvent#target
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+        COMPILE::JS
+		public function get target():Object
+		{
+			return wrappedEvent ? getTargetWrapper(wrappedEvent.target) : _target;
+		}
+
+        COMPILE::JS
+		public function set target(value:Object):void
+		{
+			_target = value;
+		}
+
+		/**
+         *  @copy org.apache.flex.events.BrowserEvent#currentTarget
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+		 */
+        COMPILE::JS
+		public function get currentTarget():Object
+		{
+			return wrappedEvent ? getTargetWrapper(wrappedEvent.currentTarget) : _target;
+		}
+
+        COMPILE::JS
+		public function set currentTarget(value:Object):void
+		{
+			_target = value;
+		}
 
         private var _key:String;
         public function get key():String
@@ -120,6 +187,76 @@ package org.apache.flex.events
 		public function set specialKey(value:Boolean):void
 		{
 			_specialKey = value;
+		}
+
+        /**
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+         */
+        COMPILE::JS
+		override public function stopImmediatePropagation():void
+		{
+            if(wrappedEvent)
+            {
+			    wrappedEvent.stopPropagation();
+			    nativeEvent.stopImmediatePropagation();
+            }
+		}
+
+        /**
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.9
+         */
+        COMPILE::JS
+		override public function stopPropagation():void
+		{
+            if(wrappedEvent)
+			    wrappedEvent.stopPropagation();
+		}
+		/**
+		 * Whether the default action has been prevented.
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
+        COMPILE::JS
+		override public function preventDefault():void
+		{
+			if(wrappedEvent)
+				wrappedEvent.preventDefault();
+			else
+			{
+				super.preventDefault();
+				_defaultPrevented = true;
+			}
+		}
+
+		COMPILE::JS
+		private var _defaultPrevented:Boolean;
+		/**
+		 * Whether the default action has been prevented.
+		 * @type {boolean}
+         *
+         * @langversion 3.0
+         * @playerversion Flash 10.2
+         * @playerversion AIR 2.6
+         * @productversion FlexJS 0.0
+		 */
+        COMPILE::JS
+		public function get defaultPrevented():Boolean
+		{
+			return wrappedEvent ? wrappedEvent.defaultPrevented : _defaultPrevented;
+		}
+        COMPILE::JS
+		public function set defaultPrevented(value:Boolean):void
+		{
+			_defaultPrevented = value;
 		}
 
         /**

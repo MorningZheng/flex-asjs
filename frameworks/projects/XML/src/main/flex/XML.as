@@ -21,6 +21,8 @@ package
 	COMPILE::JS
 	public class XML
 	{
+		import org.apache.flex.debugging.assert;
+		import org.apache.flex.debugging.assertType;
 		/*
 		 * Dealing with namespaces:
 		 * If the name is qualified, it has a prefix. Otherwise, the prefix is null.
@@ -309,50 +311,23 @@ package
 		}
 
 
-		public function XML(xml:String = null)
+		public function XML(xml:* = null)
 		{
 			// _origStr = xml;
 			_children = [];
 			if(xml)
 			{
-				var parser:DOMParser = new DOMParser();
-				// get error namespace. It's different in different browsers.
-				var errorNS:String = parser.parseFromString('<', 'application/xml').getElementsByTagName("parsererror")[0].namespaceURI;
-
-				var doc:Document = parser.parseFromString(xml, "application/xml");
-
-				//check for errors
-				if(doc.getElementsByTagNameNS(errorNS, 'parsererror').length > 0)
-        			throw new Error('XML parse error');
-    			for(var i:int=0;i<doc.childNodes.length;i++)
-    			{
-					var node:Element = doc.childNodes[i];
-					if(node.nodeType == 1)
-					{
-						_version = doc.xmlVersion;
-						_encoding = doc.xmlEncoding;
-						_name = new QName();
-						_name.prefix = node.prefix;
-						_name.uri = node.namespaceURI;
-						_name.localName = node.localName;
-						iterateElement(node,this);
-					}
-					else
-					{
-						// Do we record the nodes which are probably processing instructions?
-//						var child:XML = XML.fromNode(node);
-//						addChild(child);
-					}
-
-    			}
-				normalize();
+				var xmlStr:String = "" + xml;
+				if(xmlStr.indexOf("<") == -1)
+				{
+					_nodeKind = "text";
+					_value = xmlStr;
+				}
+				else
+				{
+					parseXMLStr(xmlStr);
+				}
 			}
-			//need to deal with errors https://bugzilla.mozilla.org/show_bug.cgi?id=45566
-			
-			// get rid of nodes we do not want 
-
-			//loop through the child nodes and build XML obejcts for each.
-			
 			Object.defineProperty(this,"0",
 				{
 					"get": function():* { return this; },
@@ -363,6 +338,59 @@ package
 				}
 			);
 			
+		}
+		private static var errorNS:String;
+		private function parseXMLStr(xml:String):void
+		{
+			var parser:DOMParser = new DOMParser();
+			if(errorNS == null)
+			{
+				// get error namespace. It's different in different browsers.
+				try{
+					errorNS = parser.parseFromString('<', 'application/xml').getElementsByTagName("parsererror")[0].namespaceURI;
+				}
+				catch(err:Error){
+					// Some browsers (i.e. IE) just throw an error
+					errorNS = "na";
+				}
+			}
+			try
+			{
+				var doc:Document = parser.parseFromString(xml, "application/xml");
+			}
+			catch(err:Error)
+			{
+				throw err;
+			}
+
+			//check for errors
+			var errorNodes:NodeList = doc.getElementsByTagNameNS(errorNS, 'parsererror');
+			if(errorNodes.length > 0)
+				throw new Error(errorNodes[0].innerHTML);
+			for(var i:int=0;i<doc.childNodes.length;i++)
+			{
+				var node:Element = doc.childNodes[i];
+				if(node.nodeType == 1)
+				{
+					_version = doc.xmlVersion;
+					_encoding = doc.xmlEncoding;
+					_name = new QName();
+					_name.prefix = node.prefix;
+					_name.uri = node.namespaceURI;
+					_name.localName = node.localName;
+					iterateElement(node,this);
+				}
+				else
+				{
+					// Do we record the nodes which are probably processing instructions?
+//						var child:XML = XML.fromNode(node);
+//						addChild(child);
+				}
+			}
+			normalize();
+		//need to deal with errors https://bugzilla.mozilla.org/show_bug.cgi?id=45566
+		// get rid of nodes we do not want
+		//loop through the child nodes and build XML obejcts for each.
 		}
 		
 		private var _children:Array;
@@ -394,6 +422,7 @@ package
 		}
 		private function addChildInternal(child:XML):void
 		{
+			assertType(child,XML,"Type must be XML");
 			child.setParent(this);
 			if(child.nodeKind() =="attribute")
 			{
@@ -496,24 +525,30 @@ package
 			*/
 			var childType:String = typeof child;
 			if(childType != "object")
-			{
-				child = child.toString();
-				var xml:XML = new XML();
-				xml.setNodeKind("text");
-				xml.setValue(child);
-				child = xml;				
-			}
-
-			if(child is XMLList)
-				child = child[0];
-
-			child.setParent(this);
+				child = xmlFromStringable(child);
 			
-			_children.push(child);
+			appendChildInternal(child);
 			normalize();
-			return child;
+			return this;
 		}
 		
+		private function appendChildInternal(child:*):void
+		{
+			if(child is XMLList)
+			{
+				var len:int = child.length();
+				for(var i:int=0; i<len; i++)
+				{
+					appendChildInternal(child[0]);
+				}
+			}
+			else
+			{
+				assertType(child,XML,"Type must be XML");
+				child.setParent(this);
+				_children.push(child);
+			}
+		}
 		
 		/**
 		 * Returns the XML value of the attribute that has the name matching the attributeName parameter.
@@ -751,7 +786,7 @@ package
 			if(idx >= _children.length)
 				return;
 			var child:XML = _children[idx];
-			child.setParent(null);
+			child._parent = null;
 			_children.splice(idx,1);
 		}
 		
@@ -829,7 +864,14 @@ package
 			list.targetProperty = name;
 			return list;
 		}
-
+		/**
+		 * for each should work on XML too
+		 * @private
+		 */
+		public function elementNames():Array
+		{
+			return [0];
+		}
 		public function equals(xml:*):Boolean
 		{
 			/*
@@ -1036,17 +1078,23 @@ package
 				return p == "0";
 			var name:QName = toXMLName(p);
 			var i:int;
-			for(i=0;i<_attributes.length;i++)
+			if(name.isAttribute)
 			{
-				if(_attributes[i].name().matches(name))
-					return true;
+				for(i=0;i<_attributes.length;i++)
+				{
+					if(_attributes[i].name().matches(name))
+						return true;
+				}
 			}
-			for(i=0;i<_children.length;i++)
+			else
 			{
-				if(_children[i].nodeKind() != "element")
-					continue;
-				if(_children[i].name().matches(name))
-					return true;
+				for(i=0;i<_children.length;i++)
+				{
+					if(_children[i].nodeKind() != "element")
+						continue;
+					if(_children[i].name().matches(name))
+						return true;
+				}
 			}
 			return false;
 		}
@@ -1366,10 +1414,10 @@ package
 				{
 					if(lastChild && lastChild.nodeKind() == "text")
 					{
-						child.setValue(child.text() + lastChild.text());
+						child.setValue(child.s() + lastChild.s());
 						deleteChildAt(i+1);
 					}
-					if(!child.text())
+					if(!child.s())
 						deleteChildAt(i);
 				}
 				lastChild = child;
@@ -1395,6 +1443,14 @@ package
 			return list.plus(rightHand);
 		}
 
+		private function xmlFromStringable(value:*):XML
+		{
+			var str:String = value.toString();
+			var xml:XML = new XML();
+			xml.setNodeKind("text");
+			xml.setValue(str);
+			return xml;
+		}
 		/**
 		 * Inserts the provided child object into the XML element before any existing XML properties for that element.
 		 * @param value
@@ -1403,12 +1459,33 @@ package
 		 */
 		public function prependChild(child:XML):XML
 		{
-			child.setParent(this);
-			
-			_children.unshift(child);
+			var childType:String = typeof child;
+			if(childType != "object")
+				child = xmlFromStringable(child);
 
-			return child;
+			prependChildInternal(child);
+			normalize();
+			return this;
 		}
+		
+		private function prependChildInternal(child:*):void
+		{
+			if(child is XMLList)
+			{
+				var len:int = child.length();
+				for(var i:int=0; i<len; i++)
+				{
+					prependChildInternal(child[0]);
+				}
+			}
+			else
+			{
+				assertType(child,XML,"Type must be XML");
+				child.setParent(this);
+				_children.unshift(child);
+			}
+		}
+
 		
 		/**
 		 * If a name parameter is provided, lists all the children of the XML object that contain processing instructions with that name.
@@ -1465,31 +1542,32 @@ package
 			var removed:XML;
 			if(!child)
 				return false;
-			if(!_attributes)
-				return false;
 
 			if(!(child is XML))
 				return removeChildByName(child);
 			
 			if(child.nodeKind() == "attribute")
 			{
+				if(!_attributes)
+					return false;
 				for(i=0;i<_attributes.length;i++)
 				{
 					if(child.equals(_attributes[i]))
 					{
 						removed = _attributes[i];
-						removed.setParent(null);
+						removed._parent = null;
 						_attributes.splice(i,1);
 						return true;
 					}
 				}
+				return false;
 			}
 			var idx:int = _children.indexOf(child);
 			if(idx < 0)
 				return false;
 			removed = _children.splice(idx,1);
-			child.setParent(null);
-			return removed;
+			child._parent = null;
+			return true;
 		}
 		private function removeChildByName(name:*):Boolean
 		{
@@ -1507,7 +1585,7 @@ package
 					if(_attributes[i].name().matches(name))
 					{
 						child = _attributes[i];
-						child.setParent(null);
+						child._parent = null;
 						_attributes.splice(i,1);
 						removedItem = true;
 					}
@@ -1522,7 +1600,7 @@ package
 				if(_children[i].name().matches(name))
 				{
 					child = _children[i];
-					child.setParent(null);
+					child._parent = null;
 					_children.splice(i,1);
 					removedItem = true;
 				}
@@ -1698,7 +1776,7 @@ package
 			{
 				//6.
 				if(_children[idx])
-					_children[idx].setParent(null);
+					_children[idx]._parent = null;
 
 				var len:int = v.length();
 				v[0].setParent(this);
@@ -1710,9 +1788,7 @@ package
 					chld = v[listIdx];
 					insertChildAt(chld,idx+listIdx);
 					listIdx++;
-
 				}
-
 			}
 			else
 			{
@@ -1897,13 +1973,15 @@ package
 					chld = elements[i];
 					if(!curChild)
 					{
+						curChild = chld
 						if(childIdx < 0)
-							curChild = prependChild(chld);
+							prependChild(chld);
 						else
-							curChild = appendChild(chld);
+							appendChild(chld);
 					}
 					else {
-						curChild = insertChildAfter(curChild, chld);
+						insertChildAfter(curChild, chld);
+						curChild = chld;
 					}
 				}
 			}
@@ -1953,10 +2031,12 @@ package
 					chld = value[i];
 					if(!curChild)
 					{
-						curChild = appendChild(chld);
+						curChild = chld;
+						appendChild(chld);
 					}
 					else {
-						curChild = insertChildAfter(curChild, chld);
+						insertChildAfter(curChild, chld);
+						curChild = chld;
 					}
 				}
 			}
@@ -2107,11 +2187,11 @@ package
 		private function toAttributeName(name:*):QName
 		{
 			var qname:QName;
-			if(!name is QName)
+			if(!(name is QName))
 			{
 				name = name.toString();
 				if(name.indexOf("@") > -1)
-					name = name.substring(name.indexOf("@"));
+					name = name.substring(name.indexOf("@") + 1);
 			}
 			qname = toXMLName(name);
 			qname.isAttribute = true;

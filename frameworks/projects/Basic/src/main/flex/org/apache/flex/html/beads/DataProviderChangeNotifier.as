@@ -49,29 +49,37 @@ package org.apache.flex.html.beads
 		
 		override protected function destinationChangedHandler(event:Event):void
 		{
-			if (dataProvider == null)
+			var object:Object = document[sourceID];
+			if (dataProvider)
 			{
-				var object:Object = document[sourceID];
-				dataProvider = object[propertyName] as ArrayList;
+				if(object[propertyName] == dataProvider)
+					return;
+				detachEventListeners();
 			}
-			else
-			{
-                dataProvider.removeEventListener("itemAdded", handleDataProviderChanges);
-                dataProvider.removeEventListener("itemRemoved", handleDataProviderChanges);
-                dataProvider.removeEventListener("itemUpdated", handleDataProviderChanges);
-                dataProvider.removeEventListener("collectionChanged", handleDataProviderChanges);
-			}
-
-            dataProvider.addEventListener("itemAdded", handleDataProviderChanges);
-            dataProvider.addEventListener("itemRemoved", handleDataProviderChanges);
-            dataProvider.addEventListener("itemUpdated", handleDataProviderChanges);
-            dataProvider.addEventListener("collectionChanged", handleDataProviderChanges);
+			dataProvider = object[propertyName] as ArrayList;
+			attachEventListeners();
 		}
 
 		private function handleDataProviderChanges(event:Event):void
 		{
             var selectionModel:ISelectionModel = _strand.getBeadByType(ISelectionModel) as ISelectionModel;
             selectionModel.dispatchEvent(new Event("dataProviderChanged"));
+		}
+		
+		protected function attachEventListeners():void
+		{
+			dataProvider.addEventListener("itemAdded", handleDataProviderChanges);
+			dataProvider.addEventListener("itemRemoved", handleDataProviderChanges);
+			dataProvider.addEventListener("itemUpdated", handleDataProviderChanges);
+			dataProvider.addEventListener("collectionChanged", handleDataProviderChanges);
+		}
+		
+		protected function detachEventListeners():void
+		{
+			dataProvider.removeEventListener("itemAdded", handleDataProviderChanges);
+			dataProvider.removeEventListener("itemRemoved", handleDataProviderChanges);
+			dataProvider.removeEventListener("itemUpdated", handleDataProviderChanges);
+			dataProvider.removeEventListener("collectionChanged", handleDataProviderChanges);
 		}
 	}
 }
