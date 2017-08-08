@@ -107,9 +107,9 @@ package org.apache.flex.core
          *  @playerversion AIR 2.6
          *  @productversion FlexJS 0.9
          */
-        public function addBeads():void
+        public function addBeads(dispatch:Boolean=true):void
         {
-            addBeadsToStrand(this,beads);
+            addBeadsToStrand(this,beads,dispatch);
         }
         
         /**
@@ -306,9 +306,9 @@ package org.apache.flex.core
          *  @playerversion AIR 2.6
          *  @productversion FlexJS 0.9
          */
-        public function addBeads():void
+        public function addBeads(dispatch:Boolean=true):void
         {
-            addBeadsToStrand(this,beads);
+            addBeadsToStrand(this,beads,dispatch);
         }
 
         /**

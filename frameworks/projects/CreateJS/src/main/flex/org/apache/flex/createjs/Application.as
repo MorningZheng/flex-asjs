@@ -175,8 +175,8 @@ package org.apache.flex.createjs
          * "inject_html" tag as follows:
          *
          * <inject_html>
-         * <script src="https://code.createjs.com/easeljs-0.8.1.min.js"></script>
-		 * <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
+         * <script src="//code.createjs.com/easeljs-0.8.1.min.js"></script>
+		 * <script src="//code.createjs.com/tweenjs-0.6.2.min.js"></script>
          * </inject_html>
          */
 		public function Application()
@@ -217,11 +217,7 @@ package org.apache.flex.createjs
             
             dispatchEvent('initialize');
 			
-			for (var index:int in beads) {
-				addBead(beads[index]);
-			}
-			
-			dispatchEvent(new org.apache.flex.events.Event("beadsAdded"));
+			addBeads();
             
             initialView.applicationModel = this.model;
             addElement(initialView);
@@ -350,19 +346,7 @@ package org.apache.flex.createjs
 		{
 			MXMLDataInterpreter.generateMXMLProperties(this, data);
 		}
-		
-		/**
-		 *  The array property that is used to add additional
-		 *  beads to an MXML tag.  From ActionScript, just
-		 *  call addBead directly.
-		 *
-		 *  @langversion 3.0
-		 *  @playerversion Flash 10.2
-		 *  @playerversion AIR 2.6
-		 *  @productversion FlexJS 0.0
-		 */
-		public var beads:Array;
-		
+				
 		/**
 		 *  @copy org.apache.flex.core.IParent#addElement()
 		 *

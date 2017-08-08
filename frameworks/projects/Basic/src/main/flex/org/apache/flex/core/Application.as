@@ -404,9 +404,9 @@ package org.apache.flex.core
          *  @productversion FlexJS 0.9
          */
         COMPILE::SWF
-        public function addBeads():void
+        public function addBeads(dispatch:Boolean=true):void
         {
-            addBeadsToStrand(this,beads);
+            addBeadsToStrand(this,beads,dispatch);
         }
 
         /**
